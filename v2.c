@@ -25,4 +25,13 @@ int main(){
     printf("\n");
     return 0;
 }
+int process_command(char* cmdline){
+    char* cmds[MAXARGS];
+    int cmd_count = 0;
 
+    // Split the command line by the pipe symbol "|"
+    char* token = strtok(cmdline, "|");
+    while (token != NULL && cmd_count < MAXARGS) {
+        cmds[cmd_count++] = token;
+        token = strtok(NULL, "|");
+    }
