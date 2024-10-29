@@ -33,5 +33,5 @@ int process_command(char* cmdline){
     char* token = strtok(cmdline, "|");
     while (token != NULL && cmd_count < MAXARGS) {
         cmds[cmd_count++] = token;
-        token = strtok(NULL, "|");
+        //token = strtok(NULL, "|");
     }
