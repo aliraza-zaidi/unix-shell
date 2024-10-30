@@ -33,5 +33,100 @@ int process_command(char* cmdline){
     char* token = strtok(cmdline, "|");
     while (token != NULL && cmd_count < MAXARGS) {
         cmds[cmd_count++] = token;
-        //token = strtok(NULL, "|");
+        token = strtok(NULL, "|");
     }
+    int in_fd = 0; // Initial input is stdin
+    int fd[2];
+
+    // Loop through each command
+    for (int i = 0; i < cmd_count; i++) {
+        char** arglist = tokenize(cmds[i]);
+        
+        // Variables for input and output redirection
+        int input_redirect = -1;
+        int output_redirect = -1;
+
+        // Check for input/output redirection in arguments
+        for (int j = 0; arglist[j] != NULL; j++) {
+            if (strcmp(arglist[j], "<") == 0) {
+                // Input redirection
+                input_redirect = open(arglist[j + 1], O_RDONLY);
+                if (input_redirect < 0) {
+                    perror("Input file open failed");
+                    return -1;
+                }
+                free(arglist[j]);
+                arglist[j] = NULL; // Remove "<" from arglist
+            } else if (strcmp(arglist[j], ">") == 0) {
+                // Output redirection
+                output_redirect = open(arglist[j + 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (output_redirect < 0) {
+                    perror("Output file open failed");
+                    return -1;
+                }
+                free(arglist[j]);
+                arglist[j] = NULL; // Remove ">" from arglist
+            }
+        }
+
+        // If not the last command, create a pipe
+        if (i < cmd_count - 1) {
+            pipe(fd);
+        }
+
+        if (fork() == 0) {
+            // Child process
+
+            // Redirect input
+            if (input_redirect != -1) {
+                dup2(input_redirect, 0); // Redirect stdin to input file
+                close(input_redirect);
+            } else if (in_fd != 0) {
+                dup2(in_fd, 0); // Set stdin to the last pipe’s read end
+                close(in_fd);
+            }
+
+            // Redirect output
+            if (output_redirect != -1) {
+                dup2(output_redirect, 1); // Redirect stdout to output file
+                close(output_redirect);
+            } else if (i < cmd_count - 1) {
+                dup2(fd[1], 1); // Set stdout to the pipe’s write end
+                close(fd[1]);
+            }
+
+            // Execute command
+            execvp(arglist[0], arglist);
+            perror("exec failed");
+            exit(1);
+        }
+
+        // Parent process closes used pipe ends and updates in_fd for next command
+        if (i < cmd_count - 1) {
+            close(fd[1]);
+            in_fd = fd[0];
+        }
+
+        // Close input/output redirection file descriptors in parent process
+        if (input_redirect != -1) {
+            close(input_redirect);
+        }
+        if (output_redirect != -1) {
+            close(output_redirect);
+        }
+
+        // Free memory for each command
+        for(int j = 0; j < MAXARGS + 1; j++) {
+            free(arglist[j]);
+        }
+        free(arglist);
+    }
+
+    // Wait for all children to finish
+    for (int i = 0; i < cmd_count; i++) {
+        wait(0);
+    }
+
+    return 0;
+}
+
