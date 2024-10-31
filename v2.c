@@ -129,4 +129,35 @@ int process_command(char* cmdline){
 
     return 0;
 }
+char** tokenize(char* cmdline){
+    char** arglist = (char**)malloc(sizeof(char*) * (MAXARGS + 1));
+    int argnum = 0;
+    
+    char* token = strtok(cmdline, " \t\n");
+    while (token != NULL && argnum < MAXARGS) {
+        arglist[argnum] = (char*)malloc(strlen(token) + 1);
+        strcpy(arglist[argnum], token);
+        argnum++;
+        token = strtok(NULL, " \t\n");
+    }
+    arglist[argnum] = NULL;
+
+    return arglist;
+}
+
+char* read_cmd(char* prompt, FILE* fp){
+    printf("%s", prompt);
+    int c;
+    int pos = 0;
+    char* cmdline = (char*)malloc(sizeof(char) * MAX_LEN);
+    while((c = getc(fp)) != EOF){
+        if(c == '\n')
+            break;
+        cmdline[pos++] = c;
+    }
+    if(c == EOF && pos == 0) 
+        return NULL;
+    cmdline[pos] = '\0';
+    return cmdline;
+}
 
