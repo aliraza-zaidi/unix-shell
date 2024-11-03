@@ -11,7 +11,7 @@
 
 #define MAX_LEN 512
 #define MAXARGS 10
-#define PROMPT "PUCITshell:- "
+#define PROMPT "ELEVENshell:- "
 #define HISTORY_SIZE 10
 #define MAX_JOBS 100
 

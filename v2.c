@@ -9,7 +9,7 @@
 #define MAX_LEN 512
 #define MAXARGS 10
 #define ARGLEN 30
-#define PROMPT "eleven:- "
+#define PROMPT "ELEVENshell:- "
 
 int process_command(char* cmdline);
 char** tokenize(char* cmdline);

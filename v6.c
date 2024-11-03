@@ -12,7 +12,7 @@
 #define MAXARGS 10
 #define MAX_VARS 100
 #define HISTORY_SIZE 10
-#define PROMPT "PUCITshell:- "
+#define PROMPT "ELEVENshell:- "
 
 struct var {
     char *name;
